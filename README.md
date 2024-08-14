@@ -1,77 +1,94 @@
 # CameraProject-ReadMe
-## Dependencies <br>
+## Third-party libraries <br>
 Library are managed using Cocoapods. To include the necessary modules in your project, follow the instructions below:
 - Add the module as a dependency to your project using **CocoaPods** or **Swift Package Manager**
 - Import the module into your project.
-1. **Alamofire**: is an open-source networking library that simplifies the process of sending HTTP requests and handling responses.
+1. **Alamofire**: Is an open-source networking library that simplifies the process of sending HTTP requests and handling responses. In the app, it is used to send requests and receive responses from the server to the client.
    - [Alamofire GitHub](https://github.com/Alamofire/Alamofire.git)
    - Add it to your Podfile:
      ```bash
       pod 'Alamofire'
      ```
-2. **SnapKit**: basically adds syntactic sugar over the native auto layout code, which makes understanding and writing auto layout code easier.
+2. **SnapKit**: Basically adds syntactic sugar over the native auto layout code, which makes understanding and writing auto layout code easier. In the app, it is used to make the code more intuitive and easier to maintain. 
    - [SnapKit GitHub](https://github.com/SnapKit/SnapKit.git)
    - Add it to your Podfile:
      ```bash
       pod 'Snapkit'
      ```
-3. **Firebase**: is primarily used for user authentication, managing databases (such as Realtime Database and Cloud Firestore) to store and sync real-time data, managing file storage with Firebase Storage, sending push notifications through Cloud Messaging, and integrating analytics tools with Firebase Analytics to track and improve user experience.
+3. **Firebase**: Used for user authentication, database management (Realtime Database, Firestore), file storage, push notifications, and analytics. In the app, it is used to send camera motion notifications.
    - [Firebase Setup Guide](https://firebase.google.com/docs/ios/setup)
    - Add it to your Podfile:
      ```bash
       pod 'Firebase'
       pod 'Firebase/Core'
      ```
-4. **Kingfisher**: is a powerful, pure-Swift library for downloading and caching images from the web. It provides you a chance to use a pure-Swift way to work with remote images in your next app.
+4. **Kingfisher**: Used for downloading and caching images. In the app, it is used to display the image list and the screenshot image during camera playback.
    - [Kingfisher GitHub](https://github.com/onevcat/Kingfisher.git)
    - Add it to your Podfile:
      ```bash
       pod 'Kingfisher'
      ```
+5. **KeychainSwift**: Helper functions for saving text in Keychain securely for iOS, OS X, tvOS and watchOS. In the app, it is used to save the Session Id and Account Id of the signed in user.
+   - [Keychain-Swift gitHub](https://github.com/evgenyneu/keychain-swift.git)
+   - Add it to your Podfile:
+     ```bash
+      pod 'KeychainSwift'
+     ```
 ## Structure and Architecture
-- FlowChar
-  
-  ![url drawio](https://github.com/user-attachments/assets/93295d45-5405-4efc-9c0b-4db05afa3ca1)
-  > Diagram of the project's operating mechanism.
+- Component Diagram <br>
+<p align="center">
+   <img src="https://github.com/user-attachments/assets/85369c03-cfad-4f14-8384-98c9b65fc41f" alt="url drawio" />
+</p>
 
-- Each Module has its own directory
-    - Network
-      - ApiRequestManager: used to send network requests (GET/POST/DELETE) from `SourceManager` to the API
-      - SourceManager: sends network requests through `ApiRequestManager`, receives responses from the API, and processes them (success or failure)
-    - Service
-      - Sends request parameters to `Network` and receives JSON data
-      - Returns JSON data to `Repository`
-    - Repository: manages data from various sources (stored locally or on a server)
-      - Local: receives and updates data for `DataSource`
-      - Remote: receives JSON data from `Service` and sends data to `Service` from `UseCase`
-    - UseCase: transforms data received from `Repository` (Models) into appropriate data (DataMapper) for display on the `View` through ViewModel. It is also where user changes are handled (update data)
-    - ViewModel
-      - Accesses and updates data from `UseCase` for display on the `View`
-      - Receives and processes events from the `View` and updates data for the `View`
-    - View
-      - Displays data received from `ViewModel` and interacts with the user
-      - Sends events to `ViewModel` when the user interacts
-    - DataSource: database used to store data locally
-    - Models: models typically represent data objects in the application <br>
-      **Ex:**<br>
-      - used to structure data (JSON, etc) for API requests and responses<br>
-      - could be a DataMapper that contains data to be displayed on the View.
+> The relationship between different components in a system
+### Explanation of the Architecture:
+1. **View**
+   - **Definition**: The UI layer where data is displayed to users interactions are captured.
+   - **Interaction**: Sends user inputs to the `ViewModel` and displays the data processed by the `ViewModel`
+2. **ViewModel**
+   - **Definition**: Serves as a bridge between the `View` and the `UseCase`. It prepares data for display and processes user actions.
+   - **Interaction**: Receives data from the `UseCase`, forwards it to the `View`, and sends user actions to the `UseCase`.
+3. **UseCase**
+   - **Definition**: Contains the application's business logic. It processes request from the `ViewModel` and interacts with the `Repository` to fetch or manipulate data.  
+   - **Interaction**: Communicates with the `Repository` to retrieve or update data, and return processed data to the `ViewModel`.
+4. **Repository**
+   - **Definition**: Manages data from various sources and provides a unified API for data access and updates.
+   - **Interaction**: Retrievies data from `Local` or `Remote` sources and provides it to the `UseCase`. It also handles data updates in `Local` or `Remote` storage.
+5. **Local (DataSource)**
+   - **Definition**: Represents local storage solutions, sush as Core Data or SQLite databases
+   - **Interaction**: Stores and retrieves data locally to support offline access and optimize performance.
+6. **Remote (Network)**
+   - **Definition**: Represents remote data source, such as APIs or web services.
+   - **Interaction**: Manages network request and response, providing data from external servers to the `Repository`
+7. **Models**:
+   - **Definition**: Data objects that represent the structure of data used across the applicaiton.
+   - **Interaction**: Utilized by the `Repository` to represent data retrieved from of sent to `Local` and `Remote` sources.
     
 ## Design Pattern
-- **Signleton**:
+### MVVM (Model-View-ViewModel)
+  - **Model**: Represents the data and business logic.
+  - **View**: Displays the data and handles user interface elements.
+  - **ViewModel**: Manages the data for the view and provides a way to bind the data to the view. It also handles user interactions and updates the model accordingly.
+### Signleton
   - Ensures a class has only one instance throughout the app.
   - Provides a single access point for functionality and is initialized only on first use.
-  
+### Dependency Injection
+  - Involves passing dependencies (services or object) to a class rather than creating them within the class. This promotes better testability and modularity.
 ## Database
-- **CoreData**: An object-oriented framework for managing and persisting data within the app.
-- **UseDefautl**: A key-value store for simple data types like strings, numbers, and booleans, useful for saving and retrieving lightweight data.
-- **Key_Chain**: A secure storage solution for secret values like API keys and passwords, also allowing data sharing between apps.
+### CoreData
+An object-oriented framework for managing and persisting data within the app. In the app, it is used to display the camera list when there is no network connection.
+- **Entities**: Represents the structure of the data stored in the database. For example, a `Camera` entity with attributes such as `id`, `name`, and `status`.
+- **Managed Object Context**: The environment in which Core Data objects are managed. The context is responsible for tracking changes to objects and saving these changes to the persistent store.
+- **Persistent Store Coordinator**: Coordinates access to the persistent store, managing the SQLite database file that backs the Core Data storage.
+### UseDefautl
+Is a convenient ưay to store small amounts of data in iOS, macOS, watchOS, and tvOS. You can use it to store simple data types such as strings, numbers, and booleans, as well as more complex data types such as arrays and dictionaries.
+  - **Key-Value Storage**: Data is stored as key-value pairs, making it easy to save and retrieve information without needing to manage complex data structures.
 
 ## Environment Setup
 ### Prerequisites
-- **Xcode**: Version 14.x or higher
-- **Swift**: Version 5.x
-- **CocoaPods**: Version 1.10.0 or higher
+- **Xcode**: Version 14.0+
+- **Swift**: Version 5.0+
+- **CocoaPods**: Version 1.9.0+
 
 ### Tools
 - **Xcode**: Primary IDE for IOS development.
@@ -84,7 +101,7 @@ Library are managed using Cocoapods. To include the necessary modules in your pr
 2. Add it to your Xcode project.
 3. Initialize Firebase in your AppDelegate or SceneDelegate.
 
-### API Endpionts
+### API Endpoints
 - **Development**: `https://api-dev.ex.com`
 - **Production**: `https://api.ex.com`
 
@@ -103,7 +120,7 @@ Install project dependencies using CocoaPods:
 ```bash
 pod install
 ```
-### Step 3: Open th Project <br>
+### Step 3: Open the Project <br>
 Open the project using the `.xcworkspace` file:
 ```bash
 open CameraProject-ReadMe.xcworkspace
